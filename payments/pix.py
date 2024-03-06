@@ -9,7 +9,7 @@ class Pix:
         """
             create the bank payment
         """
-        bank_payment_id = uuid.uuid4() #simulation
+        bank_payment_id = str(uuid.uuid4()) #simulation
         hash_payment = f"hash_payment_{bank_payment_id}" #simulation
 
         img = qrcode.make(hash_payment)
