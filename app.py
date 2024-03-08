@@ -22,7 +22,7 @@ def create_payment_pix():
     
     pix_obj = Pix()
     data_payment_pix = pix_obj.create_payment()
-    new_payment.bank_paid_id = data_payment_pix["bank_payment_id"]
+    new_payment.bank_payment_id = data_payment_pix["bank_payment_id"]
     new_payment.qr_code = data_payment_pix["qr_code_path"]
 
     db.session.add(new_payment)
@@ -39,10 +39,10 @@ def get_qr_code_img(filename):
 def pix_confirmation():
     data = request.get_json()
 
-    if "bank_paid_id" not in data and "value" not in data:
+    if "bank_payment_id" not in data and "value" not in data:
         return jsonify({"message": "Invalid payment data."}), 400    
     
-    payment = Payment.query.filter_by(bank_paid_id=data.get("bank_paid_id")).first()
+    payment = Payment.query.filter_by(bank_payment_id=data.get("bank_payment_id")).first()
 
     if not payment or payment.paid:
         return jsonify({"message": "Payment not found"}), 404
@@ -58,6 +58,8 @@ def pix_confirmation():
 @app.route('/payments/pix/<int:payment_id>', methods=["GET"])
 def payment_pix_page(payment_id):
     payment = Payment.query.get(payment_id)
+    if not payment:
+        return render_template("404.html")
     if payment.paid:
         return render_template("confirmed_payment.html",
                                payment_id=payment.id,
@@ -72,6 +74,10 @@ def payment_pix_page(payment_id):
 @socketio.on('connect')
 def handle_connect():
     print("Client Connected to the server")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print("Client Disconnected to the server")
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
